@@ -206,6 +206,8 @@ class DbtIntegrationTest(object):
         else:
             profiles_config["schema"] = self.target_schema
         profiles_yaml = config_generator.transform(destination_type, profiles_config)
+        if destination_type.value == DestinationType.ORACLE.value:
+            profiles_yaml["normalize"]["outputs"]["prod"]["schema"] = "users"
         config_generator.write_yaml_config(test_root_dir, profiles_yaml)
         return profiles_config
 
