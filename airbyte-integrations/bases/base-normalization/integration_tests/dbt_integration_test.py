@@ -41,7 +41,8 @@ from normalization.transform_config.transform import TransformConfig
 
 class DbtIntegrationTest(object):
     def __init__(self):
-        self.target_schema = "test_normalization"
+        self.target_schema = "system"
+        # self.target_schema = "test_normalization"
         self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
         self.db_names = ["postgres", "mysql", "oracle"]
 
@@ -130,8 +131,8 @@ class DbtIntegrationTest(object):
             "port": 1521,  # port,
             "sid": "xe",
             "username": "system",
-            "password": "testpassword",
-            "schema": " users",
+            "password": "oracle",
+            "schema": "system",
         }
         # commands = [
         #     "docker",
