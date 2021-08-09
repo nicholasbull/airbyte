@@ -80,14 +80,14 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
         """
         :return an object representing single record in the response
         """
-        yield from json.loads(response.text) if response else []
+        yield from response.json() if response else []
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         try:
             return super()._send_request(request, request_kwargs)
         except requests.exceptions.HTTPError as http_exception:
             response = http_exception.response
-            if response.status_code in [HTTPStatus.FORBIDDEN]:
+            if response.status_code == HTTPStatus.FORBIDDEN:
                 try:
                     resp = ErrorResponse.parse_raw(response.text)
                     self.logger.warn(
@@ -134,7 +134,7 @@ class PaginationStream(ContextStream):
     def next_page_token(self, response: requests.Response) -> Optional[PageToken]:
         if not response:
             return None
-        responses = json.loads(response.text)
+        responses = response.json()
         if len(responses) < self.page_size:
             self._ctx.current_token = PageToken()
             return None

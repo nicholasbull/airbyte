@@ -141,7 +141,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             for success_report in completed_reports:
                 report_infos.remove(success_report)
             if report_infos:
-                print(report_infos)
                 logger.info(f"{len(report_infos)} report(s) remained, taking {self.CHECK_INTERVAL_SECONDS} seconds timeout")
                 time.sleep(self.CHECK_INTERVAL_SECONDS)
         if not report_infos:
@@ -198,16 +197,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def _send_http_request(self, url: str, profile_id: int, json: dict = None):
         headers = self._get_auth_headers(profile_id)
         if json:
-            response = self._session.post(
-                url,
-                headers=headers,
-                json=json,
-            )
+            response = self._session.post(url, headers=headers, json=json)
         else:
-            response = self._session.get(
-                url,
-                headers=headers,
-            )
+            response = self._session.get(url, headers=headers)
         if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
             raise TooManyRequests()
         return response
