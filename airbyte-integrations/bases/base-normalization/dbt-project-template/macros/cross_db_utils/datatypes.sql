@@ -31,10 +31,18 @@
     char
 {%- endmacro -%}
 
+{%- macro oracle__type_string() -%}
+    varchar(1000)
+{%- endmacro -%}
+
 
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}
     float
+{% endmacro %}
+
+{% macro oracle__type_float() %}
+    numeric
 {% endmacro %}
 
 
@@ -47,6 +55,10 @@
 {# bigint ------------------------------------------------- #}
 {% macro mysql__type_bigint() %}
     signed
+{% endmacro %}
+
+{% macro oracle__type_bigint() %}
+    numeric
 {% endmacro %}
 
 

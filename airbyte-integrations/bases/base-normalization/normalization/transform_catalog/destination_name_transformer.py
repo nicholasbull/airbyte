@@ -149,7 +149,7 @@ class DestinationNameTransformer:
         if self.needs_quotes(result):
             result = result.replace('"', '""')
             result = result.replace("'", "\\'")
-            result = f"adapter.quote('{result}')"
+            result = f"quote('{result}')"
             result = self.__normalize_identifier_case(result, is_quoted=True)
             if not in_jinja:
                 result = jinja_call(result)

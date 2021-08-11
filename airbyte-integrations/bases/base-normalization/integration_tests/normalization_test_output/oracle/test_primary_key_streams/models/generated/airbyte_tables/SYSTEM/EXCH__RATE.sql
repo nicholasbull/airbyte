@@ -3,13 +3,13 @@
 select
     ID,
     CURRENCY,
-    {{ ADAPTER.QUOTE('DATE') }},
-    {{ ADAPTER.QUOTE('HKD@__TERS') }},
+    {{ QUOTE('DATE') }},
+    {{ QUOTE('HKD@__TERS') }},
     HKD___TERS,
     NZD,
     USD,
-    _airbyte_emitted_at,
-    _AIR__SHID
+    airbyte_emitted_at,
+    HASH_COLUMN_NAME
 from {{ ref('EXCH__RATE_AB3') }}
--- EXCH__RATE from {{ source('SYSTEM', '_AIRBYTE_RAW_EXCHANGE_RATE') }}
+-- EXCH__RATE from {{ source('SYSTEM', 'AIRBYTE_RAW_EXCHANGE_RATE') }}
 

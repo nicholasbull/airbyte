@@ -321,7 +321,7 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    _airbyte_emitted_at
+    airbyte_emitted_at
 from {{ from_table }}
 {{ unnesting_after_query }}
 {{ sql_table_comment }}
@@ -367,7 +367,7 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    _airbyte_emitted_at
+    airbyte_emitted_at
 from {{ from_table }}
 {{ sql_table_comment }}
     """
@@ -459,7 +459,7 @@ select
   *,
   row_number() over (
     partition by {{ hash_id }}
-    order by _airbyte_emitted_at asc
+    order by airbyte_emitted_at asc
   ) as _airbyte_row_num
 from {{ from_table }}
 {{ sql_table_comment }}
@@ -486,13 +486,13 @@ select
     {{ cursor_field }} as _airbyte_start_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc
-    ) as _airbyte_end_at,
+        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, airbyte_emitted_at desc
+    ) as airbyte_end_at,
     lag({{ cursor_field }}) over (
         partition by {{ primary_key }}
-        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, _airbyte_emitted_at desc{{ cdc_updated_at_order }}
-    ) is null {{ cdc_active_row }}as _airbyte_active_row,
-    _airbyte_emitted_at,
+        order by {{ cursor_field }} is null asc, {{ cursor_field }} desc, airbyte_emitted_at desc{{ cdc_updated_at_order }}
+    ) is null {{ cdc_active_row }}as airbyte_active_row,
+    airbyte_emitted_at,
     {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
@@ -520,7 +520,7 @@ from {{ from_table }}
 
     def get_cursor_field(self, column_names: Dict[str, Tuple[str, str]]) -> str:
         if not self.cursor_field:
-            return "_airbyte_emitted_at"
+            return "airbyte_emitted_at"
         elif len(self.cursor_field) == 1:
             if not is_airbyte_column(self.cursor_field[0]):
                 return column_names[self.cursor_field[0]][0]
@@ -569,7 +569,7 @@ select
   {%- for field in fields %}
     {{ field }},
   {%- endfor %}
-    _airbyte_emitted_at,
+    airbyte_emitted_at,
     {{ hash_id }}
 from {{ from_table }}
 {{ sql_table_comment }}
@@ -590,6 +590,7 @@ from {{ from_table }}
 
     def add_to_outputs(self, sql: str, is_intermediate: bool, column_count: int = 0, suffix: str = "") -> str:
         schema = self.get_schema(is_intermediate)
+        schema = "SYSTEM"
         # MySQL table names need to be manually truncated, because it does not do it automatically
         truncate_name = self.destination_type == DestinationType.MYSQL
         table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix, truncate_name)

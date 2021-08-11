@@ -16,6 +16,10 @@
   {{ '.' ~ json_path_list|join('.') }}
 {%- endmacro %}
 
+{% macro oracle__format_json_path(json_path_list) -%}
+  {{ '\'$."' ~ json_path_list|join('."') ~ '"\'' }}
+{%- endmacro %}
+
 {% macro bigquery__format_json_path(json_path_list) -%}
   {{ '"$[\'' ~ json_path_list|join('\'][\'') ~ '\']"' }}
 {%- endmacro %}
@@ -75,6 +79,10 @@
 
 {% macro default__json_extract_scalar(json_column, json_path_list) -%}
     json_extract_scalar({{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{% macro oracle__json_extract_scalar(json_column, json_path_list) -%}
+    json_value({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {% macro bigquery__json_extract_scalar(json_column, json_path_list) -%}

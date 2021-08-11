@@ -127,9 +127,9 @@ class DbtIntegrationTest(object):
         print("Starting localhost oracle container for tests")
         # port = self.find_free_port()
         config = {
-            "host": "localhost",
+            "host": "172.17.0.2",
             "port": 1521,  # port,
-            "sid": "xe",
+            "sid": "XE", #"xe",
             "username": "system",
             "password": "oracle",
             "schema": "system",
@@ -208,7 +208,7 @@ class DbtIntegrationTest(object):
             profiles_config["schema"] = self.target_schema
         profiles_yaml = config_generator.transform(destination_type, profiles_config)
         if destination_type.value == DestinationType.ORACLE.value:
-            profiles_yaml["normalize"]["outputs"]["prod"]["schema"] = "users"
+            profiles_yaml["normalize"]["outputs"]["prod"]["schema"] = "system"
         config_generator.write_yaml_config(test_root_dir, profiles_yaml)
         return profiles_config
 
