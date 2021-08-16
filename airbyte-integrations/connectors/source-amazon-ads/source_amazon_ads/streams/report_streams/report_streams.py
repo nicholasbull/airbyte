@@ -34,6 +34,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 from urllib.parse import urljoin
 
 import backoff
+import pendulum
 import pytz
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -100,6 +101,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
+        self._start_date = pendulum.parse(config.start_date).set(tz="UTC") if config.start_date else None
         super().__init__(config, context)
 
     @property
@@ -214,7 +216,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         """
         Generates dates in YYYYMMDD format for each day started from start_report_date until current date (current date included)
         """
-        now = datetime.now()
+        now = datetime.utcnow()
         if not start_report_date:
             start_report_date = now
 
@@ -227,15 +229,17 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if sync_mode == SyncMode.full_refresh:
-            start_date = None
+            start_date = self._start_date
         else:
             # incremental stream
             stream_state = stream_state or {}
             start_date = stream_state.get(self.cursor_field)
             if start_date:
-                start_date = datetime.strptime(start_date, ReportStream.REPORT_DATE_FORMAT)
+                start_date = pendulum.from_format(start_date, ReportStream.REPORT_DATE_FORMAT, tz="UTC")
                 # We already processed records for date specified in stream state, move to the day after
                 start_date += timedelta(days=1)
+            else:
+                start_date = self._start_date
 
         return [{self.cursor_field: date} for date in ReportStream.get_report_date_ranges(start_date)] or [None]
 

@@ -51,6 +51,13 @@ class AmazonAdsConfig(BaseModel):
         description='Oauth 2.0 refresh_token, <a href="https://developer.amazon.com/docs/login-with-amazon/conceptual-overview.html">read details here</a>',
         airbyte_secret=True,
     )
+
+    start_date: str = Field(
+        None,
+        name="Start date",
+        description="Start date for collectiong reports, should not be more than 60 days in past. In YYYY-MM-DD format",
+        examples=["2022-10-10", "2022-10-22"],
+    )
     host: str = Field(None, alias="_host")
 
     @classmethod
