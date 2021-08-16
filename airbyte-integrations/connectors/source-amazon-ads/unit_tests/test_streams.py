@@ -155,7 +155,7 @@ def test_streams_campaigns_pagination(mocker, test_config, profiles_response, ca
     def campaigns_paginated_response_cb(request):
         query = urlparse(request.url).query
         query = parse_qs(query)
-        start_index, count = (int(query[f][0]) for f in ["startIndex", "count"])
+        start_index, count = (int(query.get(f, [0])[0]) for f in ["startIndex", "count"])
         response_body = campaigns[start_index : start_index + count]
         return (200, {}, json.dumps(response_body))
 

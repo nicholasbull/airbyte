@@ -25,10 +25,9 @@
 from pydantic import BaseModel, Field
 
 
-class Spec(BaseModel):
+class AmazonAdsConfig(BaseModel):
     class Config:
         title = "Amazon Ads Spec"
-        doc_url = "https://docs.airbyte.io/integrations/sources/amazon-ads"
 
     client_id: str = Field(
         name="Client ID",
@@ -58,7 +57,4 @@ class Spec(BaseModel):
     def schema(cls, **kvargs):
         schema = super().schema(**kvargs)
         schema["properties"] = {name: desc for name, desc in schema["properties"].items() if not name.startswith("_")}
-        return {
-            "documentationUrl": cls.Config.doc_url,
-            "connectionSpecification": schema,
-        }
+        return schema

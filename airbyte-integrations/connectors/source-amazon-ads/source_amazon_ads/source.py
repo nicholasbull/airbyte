@@ -32,7 +32,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 from .common import SourceContext
-from .spec import Spec
+from .spec import AmazonAdsConfig
 from .streams import (
     DisplayReportStream,
     Profiles,
@@ -68,7 +68,7 @@ class SourceAmazonAds(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        config = Spec(**config)
+        config = AmazonAdsConfig(**config)
         Profiles(config, authenticator=self._make_authenticator(config)).fill_context()
         return True, None
 
@@ -76,39 +76,43 @@ class SourceAmazonAds(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        config = Spec(**config)
+        config = AmazonAdsConfig(**config)
         auth = self._make_authenticator(config)
-        profiles_stream = Profiles(config, context=self.ctx, authenticator=auth)
+        stream_args = {"config": config, "context": self.ctx, "authenticator": auth}
+        profiles_stream = Profiles(**stream_args)
         profiles_stream.fill_context()
-        return [
-            profiles_stream,
-            SponsoredDisplayCampaigns(config, context=self.ctx, authenticator=auth),
-            SponsoredDisplayAdGroups(config, context=self.ctx, authenticator=auth),
-            SponsoredDisplayProductAds(config, context=self.ctx, authenticator=auth),
-            SponsoredDisplayTargetings(config, context=self.ctx, authenticator=auth),
-            DisplayReportStream(config, context=self.ctx, authenticator=auth),
-            SponsoredProductCampaigns(config, context=self.ctx, authenticator=auth),
-            SponsoredProductAdGroups(config, context=self.ctx, authenticator=auth),
-            SponsoredProductKeywords(config, context=self.ctx, authenticator=auth),
-            SponsoredProductNegativeKeywords(config, context=self.ctx, authenticator=auth),
-            SponsoredProductAds(config, context=self.ctx, authenticator=auth),
-            SponsoredProductTargetings(config, context=self.ctx, authenticator=auth),
-            SponsoredProductsReportStream(config, context=self.ctx, authenticator=auth),
-            SponsoredBrandsCampaigns(config, context=self.ctx, authenticator=auth),
-            SponsoredBrandsAdGroups(config, context=self.ctx, authenticator=auth),
-            SponsoredBrandsKeywords(config, context=self.ctx, authenticator=auth),
-            SponsoredBrandsReportStream(config, context=self.ctx, authenticator=auth),
+        non_profile_stream_classes = [
+            SponsoredDisplayCampaigns,
+            SponsoredDisplayAdGroups,
+            SponsoredDisplayProductAds,
+            SponsoredDisplayTargetings,
+            DisplayReportStream,
+            SponsoredProductCampaigns,
+            SponsoredProductAdGroups,
+            SponsoredProductKeywords,
+            SponsoredProductNegativeKeywords,
+            SponsoredProductAds,
+            SponsoredProductTargetings,
+            SponsoredProductsReportStream,
+            SponsoredBrandsCampaigns,
+            SponsoredBrandsAdGroups,
+            SponsoredBrandsKeywords,
+            SponsoredBrandsReportStream,
         ]
+        return [profiles_stream, *[stream_class(**stream_args) for stream_class in non_profile_stream_classes]]
 
     def spec(self, *args) -> ConnectorSpecification:
-        return ConnectorSpecification.parse_obj(Spec.schema())
+        return ConnectorSpecification(
+            documentationUrl="https://docs.airbyte.io/integrations/sources/amazon-ads",
+            connectionSpecification=AmazonAdsConfig.schema(),
+        )
 
     @staticmethod
-    def _make_authenticator(config: Spec):
+    def _make_authenticator(config: AmazonAdsConfig):
         return Oauth2Authenticator(
-            TOKEN_URL,
-            config.client_id,
-            config.client_secret,
-            config.refresh_token,
-            [config.scope],
+            token_refresh_endpoint=TOKEN_URL,
+            client_id=config.client_id,
+            client_secret=config.client_secret,
+            refresh_token=config.refresh_token,
+            scopes=[config.scope],
         )

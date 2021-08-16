@@ -23,13 +23,12 @@
 #
 
 from decimal import Decimal
-from enum import Enum
 from typing import Any, Dict, Iterable, Type
 
 from pydantic import BaseModel, create_model
 
 
-class JSModel(BaseModel):
+class CatalogModel(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
@@ -47,14 +46,7 @@ class JSModel(BaseModel):
                         prop["type"] = ["null", prop["type"]]
 
 
-class JSEnum(str, Enum):
-    @classmethod
-    def __modify_schema__(cls, schema):
-        schema.pop("title", None)
-        schema.pop("description", None)
-
-
-class MetricsReport(JSModel):
+class MetricsReport(CatalogModel):
     profileId: int
     recordType: str
     reportDate: str
@@ -62,56 +54,34 @@ class MetricsReport(JSModel):
     metric: None
 
     @classmethod
-    def generate_metric_model(cls, metric_list: Iterable[str]) -> JSModel:
-        metrics_obj_model = create_model("MetricObjModel", **{f: (str, None) for f in metric_list}, __base__=JSModel)
+    def generate_metric_model(cls, metric_list: Iterable[str]) -> CatalogModel:
+        metrics_obj_model = create_model("MetricObjModel", **{f: (str, None) for f in metric_list}, __base__=CatalogModel)
         return create_model("MetricsModel", metric=(metrics_obj_model, None), __base__=cls)
 
 
-class State(JSEnum):
-    ENABLED = "enabled"
-    PAUSED = "paused"
-    ARCHIVED = "archived"
-
-
-class ExpressionType(JSEnum):
-    MANUAL = "manual"
-    AUTO = "auto"
-
-
-class Targeting(JSModel):
+class Targeting(CatalogModel):
     targetId: Decimal
     adGroupId: Decimal
-    state: State
-    expressionType: ExpressionType
+    state: str
+    expressionType: str
     expression: str
     resolvedExpression: str
     bid: Decimal
 
 
-class KeywordsBase(JSModel):
+class KeywordsBase(CatalogModel):
     keywordId: Decimal
     campaignId: Decimal
     adGroupId: Decimal
-    state: State
+    state: str
     keywordText: str
-
-
-class MatchType(JSEnum):
-    EXACT = "exact"
-    PHRASE = "phrase"
-    BROAD = "broad"
 
 
 class Keywords(KeywordsBase):
     nativeLanguageKeyword: str
-    matchType: MatchType
+    matchType: str
     bid: Decimal
 
 
-class NegativeMatchType(JSEnum):
-    NEGATIVE_EXACT = "negativeExact"
-    NEGATIVE_PHRASE = "negativePhrase"
-
-
 class NegativeKeywords(KeywordsBase):
-    matchType: NegativeMatchType
+    matchType: str

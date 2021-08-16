@@ -21,27 +21,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-from .common import JSModel, Keywords, MetricsReport, NegativeKeywords
-from .profile import Profile, Types
+from .common import CatalogModel, Keywords, MetricsReport, NegativeKeywords
+from .profile import Profile
 from .sponsored_brands import BrandsAdGroup, BrandsCampaign
 from .sponsored_display import DisplayAdGroup, DisplayCampaign, DisplayProductAds, DisplayTargeting
 from .sponsored_products import ProductAd, ProductAdGroups, ProductCampaign, ProductTargeting
 
 __all__ = [
-    "Types",
-    "Profile",
-    "JSModel",
+    "BrandsAdGroup",
+    "BrandsCampaign",
+    "CatalogModel",
     "DisplayAdGroup",
     "DisplayCampaign",
     "DisplayProductAds",
     "DisplayTargeting",
-    "MetricsReport",
-    "ProductCampaign",
-    "ProductAdGroups",
     "Keywords",
+    "MetricsReport",
     "NegativeKeywords",
     "ProductAd",
+    "ProductAdGroups",
+    "ProductCampaign",
     "ProductTargeting",
-    "BrandsCampaign",
-    "BrandsAdGroup",
+    "Profile",
 ]

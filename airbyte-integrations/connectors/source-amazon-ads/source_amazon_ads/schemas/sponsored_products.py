@@ -25,47 +25,27 @@
 from decimal import Decimal
 from typing import Dict, List
 
-from .common import JSEnum, JSModel, State, Targeting
+from .common import CatalogModel, Targeting
 
 
-class CampaignType(JSEnum):
-    SPONSORED_PRODUCTS = "sponsoredProducts"
-
-
-class TargetingType(JSEnum):
-    MANUAL = "manual"
-    AUTO = "auto"
-
-
-class Strategy(JSEnum):
-    LEGACYFORSALES = "legacyForSales"
-    AUTOFORSALES = "autoForSales"
-    MANUAL = "manual"
-
-
-class Predicate(JSEnum):
-    PLACEMENT_TOP = "placementTop"
-    PLACEMENT_PRODUCT_PAGE = "placementProductPage"
-
-
-class Adjustments(JSModel):
-    predicate: Predicate
+class Adjustments(CatalogModel):
+    predicate: str
     percentage: Decimal
 
 
-class Bidding(JSModel):
-    strategy: Strategy
+class Bidding(CatalogModel):
+    strategy: str
     adjustments: List[Adjustments]
 
 
-class ProductCampaign(JSModel):
+class ProductCampaign(CatalogModel):
     portfolioId: Decimal
     campaignId: Decimal
     name: str
     tags: Dict[str, str]
-    campaignType: CampaignType
-    targetingType: TargetingType
-    state: State
+    campaignType: str
+    targetingType: str
+    state: str
     dailyBudget: Decimal
     startDate: str
     endDate: str = None
@@ -73,21 +53,21 @@ class ProductCampaign(JSModel):
     bidding: Bidding
 
 
-class ProductAdGroups(JSModel):
+class ProductAdGroups(CatalogModel):
     adGroupId: Decimal
     name: str
     campaignId: Decimal
     defaultBid: Decimal
-    state: State
+    state: str
 
 
-class ProductAd(JSModel):
+class ProductAd(CatalogModel):
     adId: Decimal
     campaignId: Decimal
     adGroupId: Decimal
     sku: str
     asin: str
-    state: State
+    state: str
 
 
 class ProductTargeting(Targeting):

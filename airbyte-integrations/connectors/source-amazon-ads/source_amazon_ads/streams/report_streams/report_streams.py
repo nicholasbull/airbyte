@@ -41,8 +41,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from pydantic import BaseModel
 from source_amazon_ads.common import SourceContext
-from source_amazon_ads.schemas import JSModel, MetricsReport
-from source_amazon_ads.spec import Spec
+from source_amazon_ads.schemas import CatalogModel, MetricsReport
+from source_amazon_ads.spec import AmazonAdsConfig
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 
 logger = AirbyteLogger()
@@ -96,14 +96,14 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     REPORT_DATE_FORMAT = "%Y%m%d"
     cursor_field = "reportDate"
 
-    def __init__(self, config: Spec, context: SourceContext, authenticator: Oauth2Authenticator):
+    def __init__(self, config: AmazonAdsConfig, context: SourceContext, authenticator: Oauth2Authenticator):
         self._authenticator = authenticator
         self._session = requests.Session()
-        self._generate_model()
+        self._model = self._generate_model()
         super().__init__(config, context)
 
     @property
-    def model(self) -> JSModel:
+    def model(self) -> CatalogModel:
         return self._model
 
     def read_records(
@@ -151,14 +151,19 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         yield from []
 
     def _generate_model(self):
+        """
+        Generate pydantic model based on combined list of all the metrics
+        attributes for particular stream. This model later be used for discover
+        schema generation.
+        """
         metrics = set()
         for metric_list in self.metrics_map.values():
             metrics.update(set(metric_list))
-        self._model = MetricsReport.generate_metric_model(metrics)
+        return MetricsReport.generate_metric_model(metrics)
 
     def _get_auth_headers(self, profile_id: int):
         return {
-            "Amazon-Advertising-API-ClientId": self._config.client_id,
+            "Amazon-Advertising-API-ClientId": self._client_id,
             "Amazon-Advertising-API-Scope": str(profile_id),
             **self._authenticator.get_auth_header(),
         }
@@ -205,7 +210,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         return response
 
     @staticmethod
-    def get_report_date_ranges(start_report_date: datetime) -> List[str]:
+    def get_report_date_ranges(start_report_date: Optional[datetime]) -> List[str]:
         """
         Generates dates in YYYYMMDD format for each day started from start_report_date until current date (current date included)
         """

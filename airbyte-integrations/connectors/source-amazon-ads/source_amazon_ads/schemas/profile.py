@@ -24,73 +24,22 @@
 
 from decimal import Decimal
 
-from .common import JSEnum, JSModel
+from .common import CatalogModel
 
 
-class CountryCodes(JSEnum):
-    US = "US"
-    CA = "CA"
-    MX = "MX"
-    BR = "BR"
-    UK = "UK"
-    DE = "DE"
-    FR = "FR"
-    ES = "ES"
-    IT = "IT"
-    NL = "NL"
-    JP = "JP"
-    AU = "AU"
-    AE = "AE"
-    SG = "SG"
-
-
-class CurrencyCodes(JSEnum):
-    USD = "USD"
-    CAD = "CAD"
-    MXN = "MXN"
-    BRL = "BRL"
-    GBP = "GBP"
-    JPY = "JPY"
-    EUR = "EUR"
-    AUD = "AUD"
-    AED = "AED"
-
-
-class TimeZones(JSEnum):
-    AMERICA_LOS_ANGELES = "America/Los_Angeles"
-    AMERICA_SAO_PAULO = "America/Sao_Paulo"
-    EUROPE_LONDON = "Europe/London"
-    EUROPE_PARIS = "Europe/Paris"
-    ASIA_TOKYO = "Asia/Tokyo"
-    AUSTRALIA_SYDNEY = "Australia/Sydney"
-    ASIA_DUBAI = "Asia/Dubai"
-    ASIA_SINGAPORE = "Asia/Singapore"
-
-
-class Types(JSEnum):
-    VENDOR = "vendor"
-    SELLER = "seller"
-    AGENCY = "agency"
-
-
-class SubTypes(JSEnum):
-    KDP_AUTHOR = "KDP_AUTHOR"
-    AMAZON_ATTRIBUTION = "AMAZON_ATTRIBUTION"
-
-
-class AccountInfo(JSModel):
+class AccountInfo(CatalogModel):
     marketplaceStringId: str
     id: str
-    type: Types
+    type: str
     name: str = None
-    subType: SubTypes = None
+    subType: str = None
     validPaymentMethod: bool = None
 
 
-class Profile(JSModel):
+class Profile(CatalogModel):
     profileId: int
-    countryCode: CountryCodes = None
-    currencyCode: CurrencyCodes = None
+    countryCode: str = None
+    currencyCode: str = None
     dailyBudget: Decimal = None
-    timezone: TimeZones
+    timezone: str
     accountInfo: AccountInfo

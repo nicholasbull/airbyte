@@ -24,61 +24,35 @@
 
 from decimal import Decimal
 
-from .common import JSEnum, JSModel, State, Targeting
+from .common import CatalogModel, Targeting
 
 
-class CostType(JSEnum):
-    CPC = "cpc"
-    VCPM = "vcpm"
-
-
-class Tactic(JSEnum):
-    T00020 = "T00020"
-    T00030 = "T00030"
-
-
-class DeliveryProfile(JSEnum):
-    AS_SOON_AS_POSSIBLE = "as_soon_as_possible"
-
-
-class DisplayCampaign(JSModel):
+class DisplayCampaign(CatalogModel):
     campaignId: Decimal
     name: str
     budgetType: str
     budget: Decimal
     startDate: str
     endDate: str = None
-    costType: CostType
-    state: State
+    costType: str
+    state: str
     portfolioId: str = None
-    tactic: Tactic
-    deliveryProfile: DeliveryProfile
+    tactic: str
+    deliveryProfile: str
 
 
-class BidOptimization(JSEnum):
-    CLICKS = "clicks"
-    CONVERSIONS = "conversions"
-    REACH = "reach"
-
-
-class ModerationStatus(JSEnum):
-    APPROVED = "APPROVED"
-    PENDING_REVIEW = "PENDING_REVIEW"
-    REJECTED = "REJECTED"
-
-
-class DisplayAdGroup(JSModel):
+class DisplayAdGroup(CatalogModel):
     name: str
     campaignId: Decimal
     adGroupId: Decimal
     defaultBid: Decimal
-    bidOptimization: BidOptimization
-    state: State
-    tactic: Tactic
+    bidOptimization: str
+    state: str
+    tactic: str
 
 
-class DisplayProductAds(JSModel):
-    state: State
+class DisplayProductAds(CatalogModel):
+    state: str
     adId: Decimal
     campaignId: Decimal
     adGroupId: Decimal

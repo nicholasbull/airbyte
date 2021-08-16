@@ -25,8 +25,6 @@
 
 from copy import copy
 
-from source_amazon_ads.schemas.profile import Types
-
 from .report_streams import RecordType, ReportStream
 
 METRICS_MAP = {
@@ -279,7 +277,7 @@ class SponsoredProductsReportStream(ReportStream):
         }
         if RecordType.ASINS in record_type:
             body["campaignType"] = "sponsoredProducts"
-            if profile.accountInfo.type == Types.VENDOR:
+            if profile.accountInfo.type == "vendor":
                 metrics_list = copy(metrics_list)
                 metrics_list.remove("sku")
         return {**body, "metrics": ",".join(metrics_list)}

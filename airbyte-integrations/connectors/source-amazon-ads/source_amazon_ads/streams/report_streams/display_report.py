@@ -24,8 +24,6 @@
 
 from enum import Enum
 
-from source_amazon_ads.schemas.profile import Types
-
 from .report_streams import RecordType, ReportStream
 
 METRICS_MAP = {
@@ -205,7 +203,7 @@ class DisplayReportStream(ReportStream):
     metrics_map = METRICS_MAP
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
-        if record_type == RecordType.ASINS and profile.accountInfo.type == Types.VENDOR:
+        if record_type == RecordType.ASINS and profile.accountInfo.type == "vendor":
             return None
         return {
             "reportDate": report_date,

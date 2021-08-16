@@ -21,7 +21,7 @@ tests:
           "sponsored_product_ads",
         ]
       expect_records:
-        path: "integration_tests/expected_produts_stream.txt"
+        path: "integration_tests/expected_products_stream.txt"
         extra_fields: no
         exact_order: no
         extra_records: yes

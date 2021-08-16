@@ -32,8 +32,8 @@ from freezegun import freeze_time
 from pytest import raises
 from requests.exceptions import ConnectionError
 from source_amazon_ads.common import SourceContext
-from source_amazon_ads.schemas.profile import AccountInfo, Profile, TimeZones, Types
-from source_amazon_ads.spec import Spec
+from source_amazon_ads.schemas.profile import AccountInfo, Profile
+from source_amazon_ads.spec import AmazonAdsConfig
 from source_amazon_ads.streams import DisplayReportStream, SponsoredBrandsReportStream, SponsoredProductsReportStream
 from source_amazon_ads.streams.report_streams.report_streams import TooManyRequests
 
@@ -109,12 +109,12 @@ REPORT_STATUS_RESPONSE = """
 """
 
 
-def make_context(profile_type=Types.SELLER):
+def make_context(profile_type="seller"):
     ctx = SourceContext()
     ctx.profiles.append(
         Profile(
             profileId=1,
-            timezone=TimeZones.AMERICA_LOS_ANGELES,
+            timezone="America/Los_Angeles",
             accountInfo=AccountInfo(marketplaceStringId="", id="", type=profile_type),
         )
     )
@@ -129,7 +129,7 @@ def test_display_report_stream(test_config):
         metric_response=METRIC_RESPONSE,
     )
 
-    config = Spec(**test_config)
+    config = AmazonAdsConfig(**test_config)
     ctx = make_context()
 
     stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
@@ -139,7 +139,7 @@ def test_display_report_stream(test_config):
     updated_state = stream.get_updated_state(None, stream_slice)
     assert updated_state == stream_slice
 
-    ctx = make_context(profile_type=Types.VENDOR)
+    ctx = make_context(profile_type="vendor")
     stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     # Skip asins record for vendor profiles
@@ -154,8 +154,8 @@ def test_products_report_stream(test_config):
         metric_response=METRIC_RESPONSE,
     )
 
-    config = Spec(**test_config)
-    ctx = make_context(profile_type=Types.VENDOR)
+    config = AmazonAdsConfig(**test_config)
+    ctx = make_context(profile_type="vendor")
 
     stream = SponsoredProductsReportStream(config, ctx, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
@@ -171,7 +171,7 @@ def test_brands_report_stream(test_config):
         metric_response=METRIC_RESPONSE,
     )
 
-    config = Spec(**test_config)
+    config = AmazonAdsConfig(**test_config)
     ctx = make_context()
 
     stream = SponsoredBrandsReportStream(config, ctx, authenticator=mock.MagicMock())
@@ -188,7 +188,7 @@ def test_display_report_stream_report_generation_failure(test_config):
         metric_response=METRIC_RESPONSE,
     )
 
-    config = Spec(**test_config)
+    config = AmazonAdsConfig(**test_config)
     ctx = make_context()
 
     stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
@@ -199,7 +199,7 @@ def test_display_report_stream_report_generation_failure(test_config):
 
 @responses.activate
 def test_display_report_stream_init_failure(mocker, test_config):
-    config = Spec(**test_config)
+    config = AmazonAdsConfig(**test_config)
     ctx = make_context()
     stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
@@ -214,7 +214,7 @@ def test_display_report_stream_init_failure(mocker, test_config):
 @responses.activate
 def test_display_report_stream_init_http_exception(mocker, test_config):
     mocker.patch("time.sleep", lambda x: None)
-    config = Spec(**test_config)
+    config = AmazonAdsConfig(**test_config)
     ctx = make_context()
     stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
@@ -228,7 +228,7 @@ def test_display_report_stream_init_http_exception(mocker, test_config):
 @responses.activate
 def test_display_report_stream_init_too_many_requests(mocker, test_config):
     mocker.patch("time.sleep", lambda x: None)
-    config = Spec(**test_config)
+    config = AmazonAdsConfig(**test_config)
     ctx = make_context()
     stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
@@ -263,7 +263,7 @@ def test_display_report_stream_timeout(mocker, test_config):
         responses.add_callback(
             responses.GET, re.compile(r"https://advertising-api.amazon.com/v2/reports/[^/]+$"), callback=StatusCallback()
         )
-        config = Spec(**test_config)
+        config = AmazonAdsConfig(**test_config)
         ctx = make_context()
         stream = DisplayReportStream(config, ctx, authenticator=mock.MagicMock())
         stream_slice = {"reportDate": "20210725"}
@@ -276,7 +276,7 @@ def test_display_report_stream_timeout(mocker, test_config):
 @freeze_time("2021-07-30 04:26:08")
 @responses.activate
 def test_display_report_stream_slices_full_refresh(test_config):
-    config = Spec(**test_config)
+    config = AmazonAdsConfig(**test_config)
     stream = DisplayReportStream(config, None, authenticator=mock.MagicMock())
     slices = stream.stream_slices(SyncMode.full_refresh, cursor_field=stream.cursor_field)
     assert slices == [{"reportDate": "20210730"}]
@@ -285,7 +285,7 @@ def test_display_report_stream_slices_full_refresh(test_config):
 @freeze_time("2021-07-30 04:26:08")
 @responses.activate
 def test_display_report_stream_slices_incremental(test_config):
-    config = Spec(**test_config)
+    config = AmazonAdsConfig(**test_config)
     stream = DisplayReportStream(config, None, authenticator=mock.MagicMock())
     stream_state = {"reportDate": "20210726"}
     slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)

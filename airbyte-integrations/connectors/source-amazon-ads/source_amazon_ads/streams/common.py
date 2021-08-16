@@ -31,8 +31,8 @@ import requests
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from pydantic import BaseModel, ValidationError
-from source_amazon_ads.common import PageToken, SourceContext
-from source_amazon_ads.schemas import JSModel
+from source_amazon_ads.common import SourceContext
+from source_amazon_ads.schemas import CatalogModel
 
 URL_BASE = "https://advertising-api.amazon.com/"
 
@@ -46,12 +46,12 @@ class ErrorResponse(BaseModel):
 class BasicAmazonAdsStream(Stream, ABC):
     def __init__(self, config, context: SourceContext = None):
         self._ctx = context or SourceContext()
-        self._config = config
-        self._url = self._config.host or URL_BASE
+        self._client_id = config.client_id
+        self._url = config.host or URL_BASE
 
     @property
     @abstractmethod
-    def model(self) -> JSModel:
+    def model(self) -> CatalogModel:
         """
         Pydantic model to represent json schema
         """
@@ -62,6 +62,8 @@ class BasicAmazonAdsStream(Stream, ABC):
 
 # Basic full refresh stream
 class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
+    flattern_properties = []
+
     def __init__(self, config, *args, context: SourceContext = None, **kwargs):
         BasicAmazonAdsStream.__init__(self, config, context=context or SourceContext())
         HttpStream.__init__(self, *args, **kwargs)
@@ -70,11 +72,17 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
     def url_base(self):
         return self._url
 
+    def transform(self, record: dict):
+        for prop in self.flattern_properties:
+            if prop in record:
+                record[prop] = json.dumps(record[prop])
+        return record
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def request_headers(self, *args, **kvargs) -> MutableMapping[str, Any]:
-        return {"Amazon-Advertising-API-ClientId": self._config.client_id}
+        return {"Amazon-Advertising-API-ClientId": self._client_id}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -104,14 +112,9 @@ class ContextStream(AmazonAdsStream):
     Stream for getting resources based on context set by previous stream.
     """
 
-    flattern_properties = []
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for record in super().parse_response(response, **kwargs):
-            for prop in self.flattern_properties:
-                if prop in record:
-                    record[prop] = json.dumps(record[prop])
-            yield record
+            yield self.transform(record)
 
     def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
         for profile in self._ctx.profiles:
@@ -131,25 +134,25 @@ class PaginationStream(ContextStream):
 
     page_size = 100
 
-    def next_page_token(self, response: requests.Response) -> Optional[PageToken]:
+    def next_page_token(self, response: requests.Response) -> Optional[int]:
         if not response:
-            return None
+            return 0
         responses = response.json()
         if len(responses) < self.page_size:
-            self._ctx.current_token = PageToken()
-            return None
+            self._ctx.current_offset = 0
+            return 0
         else:
-            next_token = PageToken(self._ctx.current_token.offset + self.page_size)
-            self._ctx.current_token = next_token
-            return next_token
+            next_offset = self._ctx.current_offset + self.page_size
+            self._ctx.current_offset = next_offset
+            return next_offset
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
-        next_page_token: PageToken = None,
+        next_page_token: int = None,
     ) -> MutableMapping[str, Any]:
         return {
-            "startIndex": next_page_token.offset if next_page_token else 0,
+            "startIndex": next_page_token,
             "count": self.page_size,
         }

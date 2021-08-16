@@ -25,54 +25,29 @@
 from decimal import Decimal
 from typing import Dict
 
-from .common import JSEnum, JSModel, State
+from .common import CatalogModel
 
 
-class BudgetType(JSEnum):
-    LIFETIME = "lifetime"
-    DAILY = "daily"
-
-
-class ServingStatus(JSEnum):
-    ASIN_NOT_BUYABLE = "asinNotBuyable"
-    BILLING_ERROR = "billingError"
-    ENDED = "ended"
-    LANDING_PAGE_NOT_AVAILABLE = "landingPageNotAvailable"
-    OUT_OF_BUDGET = "outOfBudget"
-    PAUSED = "paused"
-    PENDING_REVIEW = "pendingReview"
-    READY = "ready"
-    REJECTED = "rejected"
-    RUNNING = "running"
-    SCHEDULED = "scheduled"
-    TERMINATED = "terminated"
-
-
-class AdFormat(JSEnum):
-    PRODUCT_COLLECTION = "productCollection"
-    VIDEO = "video"
-
-
-class BrandsCampaign(JSModel):
+class BrandsCampaign(CatalogModel):
     campaignId: Decimal
     name: str
     tags: Dict[str, str]
     budget: Decimal
-    budgetType: BudgetType
+    budgetType: str
     startDate: str
     endDate: str
-    state: State
-    servingStatus: ServingStatus
+    state: str
+    servingStatus: str
     brandEntityId: str
     portfolioId: Decimal
     landingPage: str
     bidOptimization: bool = None
     bidMultiplier: Decimal = None
-    adFormat: AdFormat
+    adFormat: str
     creative: str
 
 
-class BrandsAdGroup(JSModel):
+class BrandsAdGroup(CatalogModel):
     campaignId: Decimal
     adGroupId: Decimal
     name: str
