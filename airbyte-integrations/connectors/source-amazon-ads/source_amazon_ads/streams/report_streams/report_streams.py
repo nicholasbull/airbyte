@@ -150,8 +150,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         else:
             logger.error("Not all reports has been processed due to timeout")
 
-        yield from []
-
     def _generate_model(self):
         """
         Generate pydantic model based on combined list of all the metrics

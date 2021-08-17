@@ -55,7 +55,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 ### Requirements
 
-* clien_id
+* client_id
 * client_secret
 * refresh_token
 * scope
