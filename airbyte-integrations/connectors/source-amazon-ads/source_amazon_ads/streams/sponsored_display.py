@@ -73,7 +73,7 @@ class SponsoredDisplayTargetings(PaginationStream):
 
     primary_key = "targetId"
     model = DisplayTargeting
-    flattern_properties = ["expression", "resolvedExpression"]
+    flatten_properties = ["expression", "resolvedExpression"]
 
     def path(self, **kvargs) -> str:
         return "sd/targets"

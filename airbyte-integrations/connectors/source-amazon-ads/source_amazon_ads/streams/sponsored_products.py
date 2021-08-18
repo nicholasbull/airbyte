@@ -99,7 +99,7 @@ class SponsoredProductTargetings(PaginationStream):
 
     primary_key = "targetId"
     model = ProductTargeting
-    flattern_properties = ["expression", "resolvedExpression"]
+    flatten_properties = ["expression", "resolvedExpression"]
 
     def path(self, **kvargs) -> str:
         return "v2/sp/targets"

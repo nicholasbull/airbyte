@@ -34,7 +34,7 @@ class SponsoredBrandsCampaigns(PaginationStream):
 
     primary_key = "campaignId"
     model = BrandsCampaign
-    flattern_properties = ["landingPage", "creative"]
+    flatten_properties = ["landingPage", "creative"]
 
     def path(self, **kvargs) -> str:
         return "sb/campaigns"
